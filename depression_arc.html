@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" href="sad.png">
+    <title>depression clicker</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Times New Roman, sans-serif;
+            margin-top: 50px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            margin: 5px;
+        }
+        #score {
+            font-size: 36px;
+            margin: 20px;
+        }
+        .footer {
+            color: #808080;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .secret-button {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background-color: transparent;
+            border: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: #808080;
+            user-select: none;
+        }
+
+        .secret-button:hover {
+            opacity: 1;
+        }
+    </style>
+    <script src="quotes.js"></script>
+</head>
+<body>
+    <div id="score">sadness level: 0</div>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+    <button id="clickButton">Feel Sad</button>
+    <img src="sad.png" alt="depression" style="width: 200px; height: 200px;">
+  <div>
+        <button id="buyAutoClicker">Hire Sad Friend (Cost: 10)</button>
+        <div id="autoClickerCount">Sad Friends: 0</div>
+        <button id="buyMultiplier">Buy Emotional Damage (Cost: 50)</button>
+        <div id="multiplierCount">Sadness Multiplier: 1x</div>
+</div>
+    </div>
+    <div>
+        <button id="internetButton">Browse Internet (Cost: 25)</button>
+        <button id="buySadderTube">Buy SadderTube (Cost: 100)</button>
+        <div id="sadderTubeLevel">SadderTube Level: 0</div>
+    </div>
+    <div id="videoContainer" style="display: none; margin-top: 20px;">
+        <div id="videoMessage"></div>
+        <button id="closeVideo">Close Internet</button>
+    </div>
+    <div style="margin-top: 20px;">
+        <button onclick="saveGame()">Delay Taking Meds (Save)</button>
+        <button onclick="localStorage.removeItem('depressionClickerSave'); location.reload()">Take Meds</button>
+    </div>
+    <div style="margin-top: 10px;">
+        <button id="monopolyButton">Script Retro Monopoly (Cost: 1000)</button>
+        <div id="monopolyStatus">Monopoly Depression: 1x</div>
+    </div>
+    <div style="margin-top: 10px;">
+        <button id="familyGuyButton">Watch Family Guy (Cost: 200)</button>
+        <div id="quoteDisplay" style="margin: 10px; font-style: italic; color: #666;"></div>
+    </div>
+    <div class="footer">depression clicker v1.4</div>
+    <button class="secret-button" data-secret-url="https://archive.org/download/The_sims_complete_collection_tarrabyte/THE%20SIMS%20CC.iso">???</button>
+
+    <script>
+        // all dat variable stuff
+        let points = 0;
+        let autoClickers = 0;
+        let autoClickerCost = 10;
+        let multiplier = 1;
+        let multiplierCost = 50;
+        let internetCost = 25;
+        let sadderTubeLevel = 0;
+        let sadderTubeCost = 100;
+        let monopolyLevel = 1;
+        let monopolyCost = 1000;
+        let familyGuyCost = 200;
+        let familyGuyMultiplier = 1;
+
+        // all dat constant stuff
+        const scoreDisplay = document.getElementById('score');
+        const button = document.getElementById('clickButton');
+        const buyAutoClickerBtn = document.getElementById('buyAutoClicker');
+        const autoClickerDisplay = document.getElementById('autoClickerCount');
+        const buyMultiplierBtn = document.getElementById('buyMultiplier');
+        const multiplierDisplay = document.getElementById('multiplierCount');
+        const internetButton = document.getElementById('internetButton');
+        const buySadderTube = document.getElementById('buySadderTube');
+        const sadderTubeDisplay = document.getElementById('sadderTubeLevel');
+        const videoContainer = document.getElementById('videoContainer');
+        const videoMessage = document.getElementById('videoMessage');
+        const closeVideo = document.getElementById('closeVideo');
+        const monopolyButton = document.getElementById('monopolyButton');
+        const monopolyStatus = document.getElementById('monopolyStatus');
+        const familyGuyButton = document.getElementById('familyGuyButton');
+        const quoteDisplay = document.getElementById('quoteDisplay');
+
+        button.addEventListener('click', () => {
+            addPoints(1 * multiplier);
+        });
+
+        // Auto-clicker button
+        buyAutoClickerBtn.addEventListener('click', () => {
+            if (points >= autoClickerCost) {
+                points -= autoClickerCost;
+                autoClickers++;
+                autoClickerCost = Math.floor(autoClickerCost * 1.5);
+                updateDisplay();
+                buyAutoClickerBtn.textContent = `Hire Sad Friend (Cost: ${autoClickerCost})`;
+            }
+        });
+
+        // what's a multiplier? i don't know. but it makes you sadder. so that's cool.
+        buyMultiplierBtn.addEventListener('click', () => {
+            if (points >= multiplierCost) {
+                points -= multiplierCost;
+                multiplier *= 2;
+                multiplierCost = Math.floor(multiplierCost * 2);
+                updateDisplay();
+                buyMultiplierBtn.textContent = `Buy Emotional Damage (Cost: ${multiplierCost})`;
+            }
+        });
+
+        // hey look it's the dangerous place button. i mean internet button. yeah totally.
+        internetButton.addEventListener('click', () => {
+            if (points >= internetCost) {
+                points -= internetCost;
+                browseInternet();
+                updateDisplay();
+            }
+        });
+
+        // what if YouTube was actually SadderTube? woah.
+        buySadderTube.addEventListener('click', () => {
+            if (points >= sadderTubeCost) {
+                points -= sadderTubeCost;
+                sadderTubeLevel++;
+                sadderTubeCost = Math.floor(sadderTubeCost * 1.5);
+                updateDisplay();
+                buySadderTube.textContent = `Buy SadderTube (Cost: ${sadderTubeCost})`;
+            }
+        });
+
+        closeVideo.addEventListener('click', () => {
+            videoContainer.style.display = 'none';
+        });
+
+        // monopoly? but is it retro? must be right?? RIGHT???
+        monopolyButton.addEventListener('click', () => {
+            if (points >= monopolyCost) {
+                points -= monopolyCost;
+                monopolyLevel *= 3;
+                monopolyCost *= 5;
+                updateDisplay();
+                monopolyButton.textContent = `Script Retro Monopoly (Cost: ${monopolyCost})`;
+                videoMessage.textContent = "You spent 8 hours fixing Retro Monopoly. You feel sad and accomplished.";
+                videoMessage.style.color = 'purple';
+                videoContainer.style.display = 'block';
+            }
+        });
+
+        // hey lois! it's the family guy button! isn't that funny? haha.
+        familyGuyButton.addEventListener('click', () => {
+            if (points >= familyGuyCost) {
+                points -= familyGuyCost;
+                const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+                quoteDisplay.textContent = `${randomQuote.quote} - ${randomQuote.person}`;
+                familyGuyMultiplier *= 2;
+                multiplier *= 2;
+                familyGuyCost = Math.floor(familyGuyCost * 1.5);
+                updateDisplay();
+                familyGuyButton.textContent = `Watch Family Guy (Cost: ${familyGuyCost})`;
+                videoMessage.textContent = "You watched Family Guy and got more depressed. Giggity!";
+                videoMessage.style.color = '#4CAF50';
+                videoContainer.style.display = 'block';
+            }
+        });
+
+        // i love points! must add. must suffer. 
+        function addPoints(num) {
+            points += num * monopolyLevel * familyGuyMultiplier;
+            updateDisplay();
+        }
+
+        // stuff i don't even know, but i think it uhhh updates the display perhaps? idk
+        function updateDisplay() {
+            scoreDisplay.textContent = 'sadness level: ' + points;
+            autoClickerDisplay.textContent = 'Sad Friends: ' + autoClickers;
+            multiplierDisplay.textContent = 'Emotional Damage: ' + multiplier + 'x';
+            sadderTubeDisplay.textContent = `SadderTube Level: ${sadderTubeLevel}`;
+            internetButton.textContent = `Browse Internet (Cost: ${internetCost})`;
+            monopolyStatus.textContent = `Monopoly Depression: ${monopolyLevel}x`;
+        }
+
+        // internet browsing function
+        function browseInternet() {
+            videoContainer.style.display = 'block';
+            const happyChance = Math.max(0.5 - (sadderTubeLevel * 0.1), 0.1);
+            
+            if (Math.random() > happyChance) {
+                const sadBonus = Math.floor(50 * (1 + sadderTubeLevel * 0.5));
+                points += sadBonus;
+                videoMessage.textContent = `Found a sad video! Gained ${sadBonus} sadness`;
+                videoMessage.style.color = 'blue';
+            } else {
+                const happyPenalty = Math.floor(30 * (1 - sadderTubeLevel * 0.1));
+                points = Math.max(0, points - happyPenalty);
+                videoMessage.textContent = `Oh no, a happy video! Lost ${happyPenalty} sadness`;
+                videoMessage.style.color = 'red';
+            }
+        }
+
+        // Auto-clicker loop makes you automatically sad every second
+        setInterval(() => {
+            addPoints(autoClickers * multiplier);
+        }, 1000);
+
+        // saving and loading game
+        function saveGame() {
+            const gameData = {
+                points: points,
+                autoClickers: autoClickers,
+                autoClickerCost: autoClickerCost,
+                multiplier: multiplier,
+                multiplierCost: multiplierCost,
+                internetCost: internetCost,
+                sadderTubeLevel: sadderTubeLevel,
+                sadderTubeCost: sadderTubeCost,
+                monopolyLevel: monopolyLevel,
+                monopolyCost: monopolyCost,
+                familyGuyCost: familyGuyCost,
+                familyGuyMultiplier: familyGuyMultiplier
+            };
+            localStorage.setItem('depressionClickerSave', JSON.stringify(gameData));
+        }
+
+        function loadGame() {
+            const savedGame = localStorage.getItem('depressionClickerSave');
+            if (savedGame) {
+                const gameData = JSON.parse(savedGame);
+                points = gameData.points;
+                autoClickers = gameData.autoClickers;
+                autoClickerCost = gameData.autoClickerCost;
+                multiplier = gameData.multiplier;
+                multiplierCost = gameData.multiplierCost;
+                internetCost = gameData.internetCost || 25;
+                sadderTubeLevel = gameData.sadderTubeLevel || 0;
+                sadderTubeCost = gameData.sadderTubeCost || 100;
+                monopolyLevel = gameData.monopolyLevel || 1;
+                monopolyCost = gameData.monopolyCost || 1000;
+                familyGuyCost = gameData.familyGuyCost || 200;
+                familyGuyMultiplier = gameData.familyGuyMultiplier || 1;
+                updateDisplay();
+                buyAutoClickerBtn.textContent = `Hire Sad Friend (Cost: ${autoClickerCost})`;
+                buyMultiplierBtn.textContent = `Buy Emotional Damage (Cost: ${multiplierCost})`;
+                monopolyButton.textContent = `Script Retro Monopoly (Cost: ${monopolyCost})`;
+                familyGuyButton.textContent = `Watch Family Guy (Cost: ${familyGuyCost})`;
+            }
+        }
+
+        // Add auto-save
+        setInterval(saveGame, 30000);
+
+        // Load game when page loads
+        document.addEventListener('DOMContentLoaded', loadGame);
+
+        // secret... oo very secret ya know
+        document.querySelector('.secret-button').addEventListener('click', function() {
+            window.open(this.dataset.secretUrl, '_blank');
+        });
+    </script>
+</body>
+</html>
